@@ -1,8 +1,6 @@
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
-import MintRedeemCard from '@/components/MintRedeemCard';
-import LiquidityLockerPanel from '@/components/LiquidityLockerPanel';
-import StatsSection from '@/components/StatsSection';
+import Dashboard from '@/components/Dashboard';
 import AboutSection from '@/components/AboutSection';
 import Footer from '@/components/Footer';
 import wallpaper from '@/assets/wallpaper.png';
@@ -27,9 +25,7 @@ const Index = () => {
         <Header />
         <main>
           <HeroSection />
-          <MintRedeemCard />
-          <LiquidityLockerPanel />
-          <StatsSection />
+          <Dashboard />
           <AboutSection />
         </main>
         <Footer />
