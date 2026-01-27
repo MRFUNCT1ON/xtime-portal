@@ -6,7 +6,7 @@ import { formatEther, parseUnits } from 'viem';
 import timeLogo from '@/assets/TIME.png';
 import xTimeLogo from '@/assets/xTIME.png';
 import plsLogo from '@/assets/PLS.png';
-import { useXTimePrice, useTokenBalances, useEstimateMinted, useEstimateRedeemed, useXTimeFees, useXTimeInfo, useTimeAllowance } from '@/hooks/useXTimeData';
+import { useXTimePrice, useTokenBalances, useEstimateMinted, useEstimateRedeemed, useXTimeFees, useXTimeInfo, useTimeAllowance, useHoldingsValue } from '@/hooks/useXTimeData';
 import { LIQUIDITY_LOCKER_ADDRESS, XTIME_ADDRESS, TIME_ADDRESS, ERC20_ABI, LIQUIDITY_LOCKER_ABI, XTIME_ABI } from '@/lib/contracts';
 import { pulsechain } from '@/lib/wagmi';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -32,6 +32,7 @@ const Dashboard = () => {
   const { mintFee, sellFee } = useXTimeFees();
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useXTimeInfo();
   const { allowance, refetch: refetchAllowance } = useTimeAllowance();
+  const { valueInTime, isLoading: holdingsLoading } = useHoldingsValue();
 
   // Liquidity locker reads
   const { data: plsBalance } = useBalance({ address: LIQUIDITY_LOCKER_ADDRESS });
@@ -373,7 +374,7 @@ const Dashboard = () => {
                   <span className="font-display font-semibold text-sm">Your Balance</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
                     <div className="flex items-center gap-1.5 mb-1">
                       <img src={timeLogo} alt="TIME" className="w-4 h-4" />
@@ -391,6 +392,20 @@ const Dashboard = () => {
                     <p className="font-display text-sm font-bold truncate text-primary">
                       {isConnected ? formatNumber(xTimeBalance) : '---'}
                     </p>
+                  </div>
+                </div>
+
+                {/* Holdings Value */}
+                <div className="bg-muted/30 rounded-lg p-2.5 border border-primary/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">xTIME Value</span>
+                    {holdingsLoading ? (
+                      <Skeleton className="h-4 w-20" />
+                    ) : (
+                      <p className="font-display text-sm font-bold text-primary">
+                        {isConnected ? `${formatNumber(valueInTime)} TIME` : '---'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
