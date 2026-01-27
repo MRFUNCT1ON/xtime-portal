@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDownUp, Loader2, Info } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import timeLogo from '@/assets/TIME.png';
 import xTimeLogo from '@/assets/xTIME.png';
+import { useXTimePrice, useTokenBalances, useEstimateMinted, useEstimateRedeemed, useXTimeFees } from '@/hooks/useXTimeData';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type TabType = 'mint' | 'redeem';
 
@@ -13,13 +15,20 @@ const MintRedeemCard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { isConnected } = useAccount();
 
-  // Mock data - replace with actual contract reads
-  const currentPrice = '1.0523';
-  const estimatedOutput = amount ? (parseFloat(amount) * 0.95).toFixed(4) : '0.0000';
+  // Live contract reads
+  const { price, isLoading: priceLoading } = useXTimePrice();
+  const { timeBalance, xTimeBalance } = useTokenBalances();
+  const { estimatedXTime } = useEstimateMinted(activeTab === 'mint' ? amount : '0');
+  const { estimatedTime } = useEstimateRedeemed(activeTab === 'redeem' ? amount : '0');
+  const { mintFee, sellFee } = useXTimeFees();
+
+  const currentPrice = price ? parseFloat(price).toFixed(4) : '---';
+  const estimatedOutput = activeTab === 'mint' ? estimatedXTime : estimatedTime;
+  const currentFee = activeTab === 'mint' ? mintFee : sellFee;
 
   const handleMaxClick = () => {
-    // Replace with actual balance fetch
-    setAmount('1000');
+    const balance = activeTab === 'mint' ? timeBalance : xTimeBalance;
+    setAmount(balance);
   };
 
   const handleSubmit = async () => {
@@ -31,6 +40,7 @@ const MintRedeemCard = () => {
 
   const inputToken = activeTab === 'mint' ? { symbol: 'TIME', logo: timeLogo } : { symbol: 'xTIME', logo: xTimeLogo };
   const outputToken = activeTab === 'mint' ? { symbol: 'xTIME', logo: xTimeLogo } : { symbol: 'TIME', logo: timeLogo };
+  const inputBalance = activeTab === 'mint' ? timeBalance : xTimeBalance;
 
   return (
     <section id="mint" className="py-20 relative">
@@ -45,9 +55,13 @@ const MintRedeemCard = () => {
           {/* Price indicator */}
           <div className="flex items-center justify-center gap-2 mb-6">
             <span className="text-sm text-muted-foreground">Current Price:</span>
-            <span className="font-display text-lg font-bold text-primary text-glow-gold pulse-gold px-3 py-1 rounded-lg bg-primary/10">
-              1 xTIME = {currentPrice} TIME
-            </span>
+            {priceLoading ? (
+              <Skeleton className="h-8 w-40" />
+            ) : (
+              <span className="font-display text-lg font-bold text-primary text-glow-gold pulse-gold px-3 py-1 rounded-lg bg-primary/10">
+                1 xTIME = {currentPrice} TIME
+              </span>
+            )}
           </div>
 
           {/* Card */}
@@ -76,12 +90,19 @@ const MintRedeemCard = () => {
               <div className="bg-muted/30 rounded-xl p-4 border border-border">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">You pay</span>
-                  <button 
-                    onClick={handleMaxClick}
-                    className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
-                  >
-                    MAX
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {isConnected && (
+                      <span className="text-xs text-muted-foreground">
+                        Balance: {parseFloat(inputBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      </span>
+                    )}
+                    <button 
+                      onClick={handleMaxClick}
+                      className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+                    >
+                      MAX
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
@@ -111,11 +132,11 @@ const MintRedeemCard = () => {
               {/* Output Section */}
               <div className="bg-muted/30 rounded-xl p-4 border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">You receive (after 5% fee)</span>
+                  <span className="text-sm text-muted-foreground">You receive (after {currentFee}% fee)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="flex-1 min-w-0 text-2xl sm:text-3xl font-display font-bold text-foreground truncate">
-                    {estimatedOutput}
+                    {parseFloat(estimatedOutput).toLocaleString(undefined, { maximumFractionDigits: 4 })}
                   </span>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border flex-shrink-0">
                     <img src={outputToken.logo} alt={outputToken.symbol} className="w-6 h-6" />
@@ -125,16 +146,15 @@ const MintRedeemCard = () => {
               </div>
 
               {/* Info banner */}
-              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-cyan/5 border border-cyan/20">
-                <Info className="w-5 h-5 text-cyan flex-shrink-0 mt-0.5" />
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {activeTab === 'mint' 
-                    ? 'Minting xTIME locks your TIME tokens. The xTIME price only goes up — any arbitrage gap benefits all holders.'
-                    : 'Redeeming burns your xTIME and returns TIME tokens minus the 5% fee.'
-                  }
-                </p>
-              </div>
-
+                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-cyan/5 border border-cyan/20">
+                  <Info className="w-5 h-5 text-cyan flex-shrink-0 mt-0.5" />
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {activeTab === 'mint' 
+                      ? `Minting xTIME locks your TIME tokens. The xTIME price only goes up — any arbitrage gap benefits all holders. (${mintFee}% mint fee)`
+                      : `Redeeming burns your xTIME and returns TIME tokens minus the ${sellFee}% fee.`
+                    }
+                  </p>
+                </div>
               {/* Submit Button */}
               <button
                 onClick={handleSubmit}
