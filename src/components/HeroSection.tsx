@@ -43,7 +43,7 @@ const HeroSection = () => {
             
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <a 
-                href="#mint"
+                href="#dashboard"
                 className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl font-display font-semibold text-lg bg-gradient-to-r from-primary to-gold-glow text-primary-foreground hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
               >
                 Start Minting

@@ -31,16 +31,10 @@ const Header = () => {
         {/* Navigation - Desktop */}
         <nav className="hidden md:flex items-center gap-6">
           <a 
-            href="#mint" 
+            href="#dashboard" 
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
-            Mint / Redeem
-          </a>
-          <a 
-            href="#stats" 
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-          >
-            Stats
+            Dashboard
           </a>
           <a 
             href="#about" 
