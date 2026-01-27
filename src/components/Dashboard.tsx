@@ -84,7 +84,7 @@ const Dashboard = () => {
   };
 
   return (
-    <section id="mint" className="py-8 sm:py-12 relative">
+    <section id="dashboard" className="py-8 sm:py-12 relative">
       <div className="container mx-auto px-4">
         {/* Price indicator */}
         <div className="flex items-center justify-center gap-2 mb-6">
