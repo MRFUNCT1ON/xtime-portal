@@ -7,6 +7,7 @@ import timeLogo from '@/assets/TIME.png';
 import xTimeLogo from '@/assets/xTIME.png';
 import plsLogo from '@/assets/PLS.png';
 import { useXTimePrice, useTokenBalances, useEstimateMinted, useEstimateRedeemed, useXTimeFees, useXTimeInfo, useTimeAllowance, useHoldingsValue } from '@/hooks/useXTimeData';
+import { useXTimeUsdPrice, useTimeUsdPrice, formatUsd } from '@/hooks/useUsdPrice';
 import { LIQUIDITY_LOCKER_ADDRESS, XTIME_ADDRESS, TIME_ADDRESS, ERC20_ABI, LIQUIDITY_LOCKER_ABI, XTIME_ABI } from '@/lib/contracts';
 import { pulsechain } from '@/lib/wagmi';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,6 +34,8 @@ const Dashboard = () => {
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useXTimeInfo();
   const { allowance, refetch: refetchAllowance } = useTimeAllowance();
   const { valueInTime, isLoading: holdingsLoading } = useHoldingsValue();
+  const { usdPrice: xTimeUsd } = useXTimeUsdPrice();
+  const { usdPrice: timeUsd } = useTimeUsdPrice();
 
   // Liquidity locker reads
   const { data: plsBalance } = useBalance({ address: LIQUIDITY_LOCKER_ADDRESS });
@@ -383,6 +386,9 @@ const Dashboard = () => {
                     <p className="font-display text-sm font-bold truncate">
                       {isConnected ? formatNumber(timeBalance) : '---'}
                     </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isConnected ? formatUsd(timeBalance, timeUsd) : ''}
+                    </p>
                   </div>
                   <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
                     <div className="flex items-center gap-1.5 mb-1">
@@ -391,6 +397,9 @@ const Dashboard = () => {
                     </div>
                     <p className="font-display text-sm font-bold truncate text-primary">
                       {isConnected ? formatNumber(xTimeBalance) : '---'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {isConnected ? formatUsd(xTimeBalance, xTimeUsd) : ''}
                     </p>
                   </div>
                 </div>
@@ -402,9 +411,14 @@ const Dashboard = () => {
                     {holdingsLoading ? (
                       <Skeleton className="h-4 w-20" />
                     ) : (
-                      <p className="font-display text-sm font-bold text-primary">
-                        {isConnected ? `${formatNumber(valueInTime)} TIME` : '---'}
-                      </p>
+                      <div className="text-right">
+                        <p className="font-display text-sm font-bold text-primary">
+                          {isConnected ? `${formatNumber(valueInTime)} TIME` : '---'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {isConnected ? formatUsd(valueInTime, timeUsd) : ''}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -455,51 +469,56 @@ const Dashboard = () => {
                     <><Rocket className="w-4 h-4" /> Boost</>
                   )}
                 </button>
-              </div>
-            </motion.div>
 
-            {/* Stats Grid */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="glass-card rounded-2xl p-4 border border-border"
-            >
-              <h3 className="font-display font-semibold text-sm mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                Protocol Stats
-              </h3>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
-                  <p className="text-xs text-muted-foreground mb-0.5">Holders</p>
-                  {statsLoading ? <Skeleton className="h-5 w-12" /> : (
-                    <p className="font-display text-sm font-bold">{statsData ? formatNumber(statsData.users) : '---'}</p>
-                  )}
-                </div>
-                <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
-                  <p className="text-xs text-muted-foreground mb-0.5">Transactions</p>
-                  {statsLoading ? <Skeleton className="h-5 w-12" /> : (
-                    <p className="font-display text-sm font-bold">{statsData ? formatNumber(statsData.transactions) : '---'}</p>
-                  )}
-                </div>
-                <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
-                  <p className="text-xs text-muted-foreground mb-0.5">xTIME Supply</p>
-                  {statsLoading ? <Skeleton className="h-5 w-16" /> : (
-                    <p className="font-display text-sm font-bold">{statsData ? formatNumber(statsData.totalSupply) : '---'}</p>
-                  )}
-                </div>
-                <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
-                  <p className="text-xs text-muted-foreground mb-0.5">TIME Locked</p>
-                  {statsLoading ? <Skeleton className="h-5 w-16" /> : (
-                    <p className="font-display text-sm font-bold text-primary">{statsData ? formatNumber(statsData.underlyingSupply) : '---'}</p>
-                  )}
-                </div>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Creates xTIME-PLS LP and burns it permanently
+                </p>
               </div>
             </motion.div>
           </div>
         </div>
+
+        {/* Protocol Stats Row */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="max-w-5xl mx-auto mt-4"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="glass-card rounded-xl p-3 border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5">Holders</p>
+              {statsLoading ? <Skeleton className="h-5 w-12" /> : (
+                <p className="font-display text-sm font-bold">{statsData ? formatNumber(statsData.users) : '---'}</p>
+              )}
+            </div>
+            <div className="glass-card rounded-xl p-3 border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5">Transactions</p>
+              {statsLoading ? <Skeleton className="h-5 w-12" /> : (
+                <p className="font-display text-sm font-bold">{statsData ? formatNumber(statsData.transactions) : '---'}</p>
+              )}
+            </div>
+            <div className="glass-card rounded-xl p-3 border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5">xTIME Supply</p>
+              {statsLoading ? <Skeleton className="h-5 w-16" /> : (
+                <>
+                  <p className="font-display text-sm font-bold">{statsData ? formatNumber(statsData.totalSupply) : '---'}</p>
+                  <p className="text-xs text-muted-foreground">{statsData && xTimeUsd ? formatUsd(statsData.totalSupply, xTimeUsd) : ''}</p>
+                </>
+              )}
+            </div>
+            <div className="glass-card rounded-xl p-3 border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5">TIME Locked</p>
+              {statsLoading ? <Skeleton className="h-5 w-16" /> : (
+                <>
+                  <p className="font-display text-sm font-bold text-primary">{statsData ? formatNumber(statsData.underlyingSupply) : '---'}</p>
+                  <p className="text-xs text-muted-foreground">{statsData && timeUsd ? formatUsd(statsData.underlyingSupply, timeUsd) : ''}</p>
+                </>
+              )}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

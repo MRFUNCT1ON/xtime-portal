@@ -4,6 +4,8 @@ export const TIME_ADDRESS = '0xCA35638A3fdDD02fEC597D8c1681198C06b23F58' as cons
 export const LIQUIDITY_LOCKER_ADDRESS = '0x2f1176A677f67C109578D3Acb8Ac261555Dd31C6' as const;
 export const PULSEX_ROUTER_ADDRESS = '0x165C3410fC91EF562C50559f7d2289fEbed552d9' as const;
 export const XTIME_PLS_LP_ADDRESS = '0xaFBa1F0Fa76F36297799e955666f662F382C31a7' as const;
+export const WPLS_ADDRESS = '0xA1077a294dDE1B09bB078844df40758a5D0f9a27' as const;
+export const DAI_ADDRESS = '0xefD766cCb38EaF1dfd701853BFCe31359239F305' as const;
 
 export const XTIME_ABI = [
   {"inputs":[{"internalType":"address","name":"_baseAsset","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
