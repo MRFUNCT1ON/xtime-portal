@@ -203,8 +203,46 @@ const Dashboard = () => {
             </div>
           </motion.div>
 
-          {/* Right Column: Boost + Stats */}
+          {/* Right Column: Balance + Boost + Stats */}
           <div className="space-y-4">
+            {/* User Balance Panel */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="glass-card rounded-2xl p-4 border border-primary/20 relative overflow-hidden"
+            >
+              <div className="absolute -top-10 -right-10 w-20 h-20 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <Coins className="w-4 h-4 text-primary" />
+                  <span className="font-display font-semibold text-sm">Your Balance</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <img src={timeLogo} alt="TIME" className="w-4 h-4" />
+                      <span className="text-xs text-muted-foreground">TIME</span>
+                    </div>
+                    <p className="font-display text-sm font-bold truncate">
+                      {isConnected ? formatNumber(timeBalance) : '---'}
+                    </p>
+                  </div>
+                  <div className="bg-muted/30 rounded-lg p-2.5 border border-border">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <img src={xTimeLogo} alt="xTIME" className="w-4 h-4" />
+                      <span className="text-xs text-muted-foreground">xTIME</span>
+                    </div>
+                    <p className="font-display text-sm font-bold truncate text-primary">
+                      {isConnected ? formatNumber(xTimeBalance) : '---'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
             {/* Boost Panel */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
