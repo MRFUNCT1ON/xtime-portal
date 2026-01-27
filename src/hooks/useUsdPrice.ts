@@ -21,6 +21,9 @@ const ROUTER_ABI = [
   },
 ] as const;
 
+// Refresh interval for price data (15 seconds)
+const PRICE_REFRESH_INTERVAL = 15_000;
+
 // Get USD price for 1 xTIME via xTIME > TIME > WPLS > DAI path
 export function useXTimeUsdPrice() {
   const oneXTime = parseUnits('1', 18);
@@ -30,6 +33,7 @@ export function useXTimeUsdPrice() {
     abi: ROUTER_ABI,
     functionName: 'getAmountsOut',
     args: [oneXTime, [XTIME_ADDRESS, TIME_ADDRESS, WPLS_ADDRESS, DAI_ADDRESS]],
+    query: { refetchInterval: PRICE_REFRESH_INTERVAL },
   });
 
   // DAI has 18 decimals, the last element is the DAI output
@@ -47,6 +51,7 @@ export function useTimeUsdPrice() {
     abi: ROUTER_ABI,
     functionName: 'getAmountsOut',
     args: [oneTime, [TIME_ADDRESS, WPLS_ADDRESS, DAI_ADDRESS]],
+    query: { refetchInterval: PRICE_REFRESH_INTERVAL },
   });
 
   const usdPrice = data ? parseFloat(formatUnits(data[data.length - 1], 18)) : null;
