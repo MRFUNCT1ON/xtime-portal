@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowUpRight, TrendingUp, Shield, Zap } from 'lucide-react';
-import timeAnimated from '@/assets/TIME-animated.gif';
-
+import xTimeLogo from '@/assets/xTIME.png';
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -86,8 +85,8 @@ const HeroSection = () => {
               {/* Main logo */}
               <div className="relative float">
                 <img 
-                  src={timeAnimated} 
-                  alt="TIME Token" 
+                  src={xTimeLogo} 
+                  alt="xTIME Token" 
                   className="w-64 h-64 md:w-80 md:h-80 object-contain drop-shadow-2xl"
                 />
               </div>
