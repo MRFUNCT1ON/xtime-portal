@@ -20,9 +20,10 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<TabType>('mint');
   const [amount, setAmount] = useState('');
   const [txState, setTxState] = useState<TxState>('idle');
-  const [isBoostLoading, setIsBoostLoading] = useState(false);
+  const [boostState, setBoostState] = useState<TxState>('idle');
   const { isConnected, address } = useAccount();
   const { writeContract, data: txHash, reset: resetWrite } = useWriteContract();
+  const { writeContract: writeBoost, data: boostTxHash, reset: resetBoost } = useWriteContract();
   const { toast } = useToast();
 
   // Live contract reads
@@ -46,9 +47,12 @@ const Dashboard = () => {
     args: [LIQUIDITY_LOCKER_ADDRESS],
   });
 
-  // Wait for transaction receipt
+  // Wait for transaction receipts
   const { isLoading: isTxPending, isSuccess: isTxSuccess, isError: isTxError } = useWaitForTransactionReceipt({
     hash: txHash,
+  });
+  const { isLoading: isBoostPending, isSuccess: isBoostSuccess, isError: isBoostError } = useWaitForTransactionReceipt({
+    hash: boostTxHash,
   });
 
   // Handle transaction state changes
@@ -95,6 +99,37 @@ const Dashboard = () => {
       }, 2000);
     }
   }, [isTxPending, isTxSuccess, isTxError]);
+
+  // Handle boost transaction state changes
+  useEffect(() => {
+    if (isBoostPending) {
+      setBoostState('pending');
+    }
+    if (isBoostSuccess) {
+      setBoostState('success');
+      refetchBalances();
+      toast({
+        title: "Boost Successful!",
+        description: "Liquidity has been boosted and LP burned.",
+      });
+      setTimeout(() => {
+        setBoostState('idle');
+        resetBoost();
+      }, 2000);
+    }
+    if (isBoostError) {
+      setBoostState('error');
+      toast({
+        title: "Boost Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        setBoostState('idle');
+        resetBoost();
+      }, 2000);
+    }
+  }, [isBoostPending, isBoostSuccess, isBoostError]);
 
   const currentPrice = price ? parseFloat(price).toFixed(4) : '---';
   const estimatedOutput = activeTab === 'mint' ? estimatedXTime : estimatedTime;
@@ -190,29 +225,25 @@ const Dashboard = () => {
   };
 
   const handleBoost = async () => {
-    if (!isConnected || !address) return;
-    setIsBoostLoading(true);
+    if (!isConnected || !address || boostState !== 'idle') return;
+    setBoostState('pending');
     try {
-      await writeContract({
+      await writeBoost({
         address: LIQUIDITY_LOCKER_ADDRESS,
         abi: LIQUIDITY_LOCKER_ABI,
         functionName: 'boost',
         chain: pulsechain,
         account: address,
       });
-      toast({
-        title: "Boost Initiated",
-        description: "Liquidity boost transaction submitted.",
-      });
     } catch (error: any) {
       console.error('Boost failed:', error);
+      setBoostState('error');
       toast({
-        title: "Boost Failed",
-        description: error?.shortMessage || "Something went wrong.",
+        title: "Boost Rejected",
+        description: error?.shortMessage || "User rejected the transaction.",
         variant: "destructive",
       });
-    } finally {
-      setIsBoostLoading(false);
+      setTimeout(() => setBoostState('idle'), 2000);
     }
   };
 
@@ -470,11 +501,17 @@ const Dashboard = () => {
 
                 <button
                   onClick={handleBoost}
-                  disabled={!isConnected || isBoostLoading || !hasBalanceToBoost}
-                  className="w-full py-2.5 rounded-lg font-display font-bold text-sm bg-gradient-to-r from-cyan to-cyan-glow text-secondary-foreground hover:shadow-lg hover:shadow-cyan/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                  disabled={!isConnected || boostState !== 'idle' || !hasBalanceToBoost}
+                  className={`w-full py-2.5 rounded-lg font-display font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                    boostState === 'success'
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gradient-to-r from-cyan to-cyan-glow text-secondary-foreground hover:shadow-lg hover:shadow-cyan/30 disabled:opacity-50 disabled:cursor-not-allowed'
+                  }`}
                 >
-                  {isBoostLoading ? (
+                  {boostState === 'pending' ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Boosting...</>
+                  ) : boostState === 'success' ? (
+                    <><CheckCircle2 className="w-4 h-4" /> Success!</>
                   ) : !isConnected ? 'Connect Wallet' : !hasBalanceToBoost ? 'No Balance' : (
                     <><Rocket className="w-4 h-4" /> Boost</>
                   )}
