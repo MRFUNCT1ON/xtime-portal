@@ -148,6 +148,7 @@ export function useHoldingsValue() {
 }
 
 // Hook to get mint and sell fees
+// Contract returns the % that goes TO the user (e.g. 9500 = 95% to user = 5% fee)
 export function useXTimeFees() {
   const { data: mintFee } = useReadContract({
     address: XTIME_ADDRESS,
@@ -161,8 +162,9 @@ export function useXTimeFees() {
     functionName: 'sellFee',
   });
 
+  // Fee = 100% - (value/100)%, e.g. 9500 → 95% to user → 5% fee
   return {
-    mintFee: mintFee ? Number(mintFee) / 100 : 5, // Convert basis points to percentage
-    sellFee: sellFee ? Number(sellFee) / 100 : 5,
+    mintFee: mintFee ? 100 - Number(mintFee) / 100 : 5,
+    sellFee: sellFee ? 100 - Number(sellFee) / 100 : 5,
   };
 }
