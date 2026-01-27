@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { Users, ArrowRightLeft, Coins, TrendingUp } from 'lucide-react';
 import xTimeLogo from '@/assets/xTIME.png';
 import timeLogo from '@/assets/TIME.png';
+import { useXTimeInfo } from '@/hooks/useXTimeData';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -9,9 +11,10 @@ interface StatCardProps {
   value: string;
   subValue?: string;
   delay: number;
+  isLoading?: boolean;
 }
 
-const StatCard = ({ icon, label, value, subValue, delay }: StatCardProps) => (
+const StatCard = ({ icon, label, value, subValue, delay, isLoading }: StatCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -25,21 +28,23 @@ const StatCard = ({ icon, label, value, subValue, delay }: StatCardProps) => (
       </div>
     </div>
     <p className="text-sm text-muted-foreground mb-1">{label}</p>
-    <p className="stat-number text-3xl font-bold text-foreground">{value}</p>
-    {subValue && (
+    {isLoading ? (
+      <Skeleton className="h-9 w-32" />
+    ) : (
+      <p className="stat-number text-3xl font-bold text-foreground">{value}</p>
+    )}
+    {subValue && !isLoading && (
       <p className="text-sm text-primary mt-1">{subValue}</p>
     )}
   </motion.div>
 );
 
 const StatsSection = () => {
-  // Mock data - replace with actual contract reads
-  const stats = {
-    users: '1,234',
-    transactions: '12,456',
-    totalSupply: '5,678,901',
-    backing: '5,972,345',
-    price: '1.0523',
+  const { data, isLoading } = useXTimeInfo();
+
+  const formatNumber = (num: string | number) => {
+    const n = typeof num === 'string' ? parseFloat(num) : num;
+    return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
   };
 
   return (
@@ -65,27 +70,31 @@ const StatsSection = () => {
           <StatCard
             icon={<TrendingUp className="w-6 h-6 text-primary" />}
             label="Current Price"
-            value={`${stats.price} TIME`}
+            value={data ? `${parseFloat(data.price).toFixed(4)} TIME` : '---'}
             subValue="↗ Up only"
             delay={0}
+            isLoading={isLoading}
           />
           <StatCard
             icon={<Users className="w-6 h-6 text-primary" />}
             label="Total Holders"
-            value={stats.users}
+            value={data ? formatNumber(data.users) : '---'}
             delay={0.1}
+            isLoading={isLoading}
           />
           <StatCard
             icon={<ArrowRightLeft className="w-6 h-6 text-primary" />}
             label="Total Transactions"
-            value={stats.transactions}
+            value={data ? formatNumber(data.transactions) : '---'}
             delay={0.2}
+            isLoading={isLoading}
           />
           <StatCard
             icon={<Coins className="w-6 h-6 text-primary" />}
             label="xTIME Supply"
-            value={stats.totalSupply}
+            value={data ? formatNumber(data.totalSupply) : '---'}
             delay={0.3}
+            isLoading={isLoading}
           />
         </div>
 
@@ -108,9 +117,13 @@ const StatsSection = () => {
               <div className="flex flex-col items-center gap-3">
                 <img src={xTimeLogo} alt="xTIME" className="w-20 h-20" />
                 <div className="text-center">
-                  <p className="font-display text-2xl font-bold text-foreground">
-                    {stats.totalSupply}
-                  </p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-28 mx-auto" />
+                  ) : (
+                    <p className="font-display text-2xl font-bold text-foreground">
+                      {data ? formatNumber(data.totalSupply) : '---'}
+                    </p>
+                  )}
                   <p className="text-sm text-muted-foreground">xTIME Supply</p>
                 </div>
               </div>
@@ -126,9 +139,13 @@ const StatsSection = () => {
               <div className="flex flex-col items-center gap-3">
                 <img src={timeLogo} alt="TIME" className="w-20 h-20" />
                 <div className="text-center">
-                  <p className="font-display text-2xl font-bold text-primary text-glow-gold">
-                    {stats.backing}
-                  </p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-28 mx-auto" />
+                  ) : (
+                    <p className="font-display text-2xl font-bold text-primary text-glow-gold">
+                      {data ? formatNumber(data.underlyingSupply) : '---'}
+                    </p>
+                  )}
                   <p className="text-sm text-muted-foreground">TIME Locked</p>
                 </div>
               </div>
