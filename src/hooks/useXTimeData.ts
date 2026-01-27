@@ -3,11 +3,15 @@ import { formatUnits, parseUnits } from 'viem';
 import { XTIME_ADDRESS, TIME_ADDRESS, XTIME_ABI, ERC20_ABI } from '@/lib/contracts';
 
 // Hook to get xTIME protocol info (users, txs, supply, backing, price)
+// Refresh interval for live data (15 seconds)
+const REFRESH_INTERVAL = 15_000;
+
 export function useXTimeInfo() {
   const { data, isLoading, error, refetch } = useReadContract({
     address: XTIME_ADDRESS,
     abi: XTIME_ABI,
     functionName: 'getInfo',
+    query: { refetchInterval: REFRESH_INTERVAL },
   });
 
   const formatted = data ? {
@@ -27,6 +31,7 @@ export function useXTimePrice() {
     address: XTIME_ADDRESS,
     abi: XTIME_ABI,
     functionName: 'calculatePrice',
+    query: { refetchInterval: REFRESH_INTERVAL },
   });
 
   return {
@@ -45,7 +50,7 @@ export function useTokenBalances() {
     abi: ERC20_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: REFRESH_INTERVAL },
   });
 
   const { data: xTimeBalance, isLoading: xTimeLoading, refetch: refetchXTime } = useReadContract({
@@ -53,7 +58,7 @@ export function useTokenBalances() {
     abi: XTIME_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: REFRESH_INTERVAL },
   });
 
   return {
@@ -118,7 +123,7 @@ export function useTimeAllowance() {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: address ? [address, XTIME_ADDRESS] : undefined,
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: REFRESH_INTERVAL },
   });
 
   return {
@@ -138,7 +143,7 @@ export function useHoldingsValue() {
     abi: XTIME_ABI,
     functionName: 'getValueOfHoldings',
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: REFRESH_INTERVAL },
   });
 
   return {
