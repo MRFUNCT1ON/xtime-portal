@@ -1,33 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDownUp, Loader2, Info, Rocket, Flame, TrendingUp, Users, ArrowRightLeft, Coins } from 'lucide-react';
-import { useAccount, useReadContract, useWriteContract, useBalance } from 'wagmi';
-import { formatEther } from 'viem';
+import { ArrowDownUp, Loader2, Info, Rocket, Flame, TrendingUp, Coins, CheckCircle2 } from 'lucide-react';
+import { useAccount, useReadContract, useWriteContract, useBalance, useWaitForTransactionReceipt } from 'wagmi';
+import { formatEther, parseUnits } from 'viem';
 import timeLogo from '@/assets/TIME.png';
 import xTimeLogo from '@/assets/xTIME.png';
 import plsLogo from '@/assets/PLS.png';
-import { useXTimePrice, useTokenBalances, useEstimateMinted, useEstimateRedeemed, useXTimeFees, useXTimeInfo } from '@/hooks/useXTimeData';
-import { LIQUIDITY_LOCKER_ADDRESS, XTIME_ADDRESS, ERC20_ABI, LIQUIDITY_LOCKER_ABI } from '@/lib/contracts';
+import { useXTimePrice, useTokenBalances, useEstimateMinted, useEstimateRedeemed, useXTimeFees, useXTimeInfo, useTimeAllowance } from '@/hooks/useXTimeData';
+import { LIQUIDITY_LOCKER_ADDRESS, XTIME_ADDRESS, TIME_ADDRESS, ERC20_ABI, LIQUIDITY_LOCKER_ABI, XTIME_ABI } from '@/lib/contracts';
 import { pulsechain } from '@/lib/wagmi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 type TabType = 'mint' | 'redeem';
+type TxState = 'idle' | 'approving' | 'pending' | 'success' | 'error';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<TabType>('mint');
   const [amount, setAmount] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [txState, setTxState] = useState<TxState>('idle');
   const [isBoostLoading, setIsBoostLoading] = useState(false);
   const { isConnected, address } = useAccount();
-  const { writeContract } = useWriteContract();
+  const { writeContract, data: txHash, reset: resetWrite } = useWriteContract();
+  const { toast } = useToast();
 
   // Live contract reads
   const { price, isLoading: priceLoading } = useXTimePrice();
-  const { timeBalance, xTimeBalance } = useTokenBalances();
+  const { timeBalance, xTimeBalance, timeBalanceRaw, xTimeBalanceRaw, refetch: refetchBalances } = useTokenBalances();
   const { estimatedXTime } = useEstimateMinted(activeTab === 'mint' ? amount : '0');
   const { estimatedTime } = useEstimateRedeemed(activeTab === 'redeem' ? amount : '0');
   const { mintFee, sellFee } = useXTimeFees();
-  const { data: statsData, isLoading: statsLoading } = useXTimeInfo();
+  const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useXTimeInfo();
+  const { allowance, refetch: refetchAllowance } = useTimeAllowance();
 
   // Liquidity locker reads
   const { data: plsBalance } = useBalance({ address: LIQUIDITY_LOCKER_ADDRESS });
@@ -38,6 +42,56 @@ const Dashboard = () => {
     args: [LIQUIDITY_LOCKER_ADDRESS],
   });
 
+  // Wait for transaction receipt
+  const { isLoading: isTxPending, isSuccess: isTxSuccess, isError: isTxError } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  // Handle transaction state changes
+  useEffect(() => {
+    if (isTxPending && txState !== 'approving') {
+      setTxState('pending');
+    }
+    if (isTxSuccess) {
+      if (txState === 'approving') {
+        // Approval succeeded, now execute the mint
+        refetchAllowance();
+        toast({
+          title: "Approval Successful",
+          description: "TIME tokens approved. Now minting...",
+        });
+        executeMint();
+      } else {
+        setTxState('success');
+        setAmount('');
+        refetchBalances();
+        refetchStats();
+        toast({
+          title: activeTab === 'mint' ? "Mint Successful!" : "Redeem Successful!",
+          description: activeTab === 'mint' 
+            ? "Your xTIME has been minted." 
+            : "Your TIME has been redeemed.",
+        });
+        setTimeout(() => {
+          setTxState('idle');
+          resetWrite();
+        }, 2000);
+      }
+    }
+    if (isTxError) {
+      setTxState('error');
+      toast({
+        title: "Transaction Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        setTxState('idle');
+        resetWrite();
+      }, 2000);
+    }
+  }, [isTxPending, isTxSuccess, isTxError]);
+
   const currentPrice = price ? parseFloat(price).toFixed(4) : '---';
   const estimatedOutput = activeTab === 'mint' ? estimatedXTime : estimatedTime;
   const currentFee = activeTab === 'mint' ? mintFee : sellFee;
@@ -45,15 +99,90 @@ const Dashboard = () => {
   const formattedLockerXTimeBalance = lockerXTimeBalance ? parseFloat(formatEther(lockerXTimeBalance)).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0';
   const hasBalanceToBoost = (plsBalance?.value || 0n) > 0n || (lockerXTimeBalance || 0n) > 0n;
 
+  const amountWei = amount && parseFloat(amount) > 0 ? parseUnits(amount, 18) : 0n;
+  const needsApproval = activeTab === 'mint' && amountWei > allowance;
+  const hasInsufficientBalance = activeTab === 'mint' 
+    ? amountWei > timeBalanceRaw 
+    : amountWei > xTimeBalanceRaw;
+
   const handleMaxClick = () => {
     const balance = activeTab === 'mint' ? timeBalance : xTimeBalance;
     setAmount(balance);
   };
 
+  const executeMint = async () => {
+    if (!address || !amount) return;
+    try {
+      const amountToMint = parseUnits(amount, 18);
+      await writeContract({
+        address: XTIME_ADDRESS,
+        abi: XTIME_ABI,
+        functionName: 'mintWithBacking',
+        args: [amountToMint, address],
+        chain: pulsechain,
+        account: address,
+      });
+    } catch (error: any) {
+      console.error('Mint failed:', error);
+      setTxState('error');
+      toast({
+        title: "Transaction Rejected",
+        description: error?.shortMessage || "User rejected the transaction.",
+        variant: "destructive",
+      });
+      setTimeout(() => setTxState('idle'), 2000);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!amount || !isConnected) return;
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000);
+    if (!amount || !isConnected || !address || hasInsufficientBalance) return;
+    
+    try {
+      const amountToProcess = parseUnits(amount, 18);
+
+      if (activeTab === 'mint') {
+        // Check if approval is needed
+        if (needsApproval) {
+          setTxState('approving');
+          toast({
+            title: "Approval Required",
+            description: "Please approve TIME tokens first.",
+          });
+          await writeContract({
+            address: TIME_ADDRESS,
+            abi: ERC20_ABI,
+            functionName: 'approve',
+            args: [XTIME_ADDRESS, amountToProcess],
+            chain: pulsechain,
+            account: address,
+          });
+        } else {
+          // Already approved, mint directly
+          setTxState('pending');
+          await executeMint();
+        }
+      } else {
+        // Redeem xTIME for TIME
+        setTxState('pending');
+        await writeContract({
+          address: XTIME_ADDRESS,
+          abi: XTIME_ABI,
+          functionName: 'redeem',
+          args: [amountToProcess],
+          chain: pulsechain,
+          account: address,
+        });
+      }
+    } catch (error: any) {
+      console.error('Transaction failed:', error);
+      setTxState('error');
+      toast({
+        title: "Transaction Rejected",
+        description: error?.shortMessage || "User rejected the transaction.",
+        variant: "destructive",
+      });
+      setTimeout(() => setTxState('idle'), 2000);
+    }
   };
 
   const handleBoost = async () => {
@@ -67,8 +196,17 @@ const Dashboard = () => {
         chain: pulsechain,
         account: address,
       });
-    } catch (error) {
+      toast({
+        title: "Boost Initiated",
+        description: "Liquidity boost transaction submitted.",
+      });
+    } catch (error: any) {
       console.error('Boost failed:', error);
+      toast({
+        title: "Boost Failed",
+        description: error?.shortMessage || "Something went wrong.",
+        variant: "destructive",
+      });
     } finally {
       setIsBoostLoading(false);
     }
@@ -82,6 +220,19 @@ const Dashboard = () => {
     const n = typeof num === 'string' ? parseFloat(num) : num;
     return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
   };
+
+  const getButtonText = () => {
+    if (txState === 'approving') return <><Loader2 className="w-4 h-4 animate-spin" /> Approving...</>;
+    if (txState === 'pending') return <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>;
+    if (txState === 'success') return <><CheckCircle2 className="w-4 h-4" /> Success!</>;
+    if (!isConnected) return 'Connect Wallet';
+    if (!amount) return 'Enter Amount';
+    if (hasInsufficientBalance) return 'Insufficient Balance';
+    if (needsApproval) return 'Approve & Mint';
+    return activeTab === 'mint' ? 'Mint xTIME' : 'Redeem TIME';
+  };
+
+  const isButtonDisabled = !isConnected || !amount || txState !== 'idle' || hasInsufficientBalance;
 
   return (
     <section id="dashboard" className="py-8 sm:py-12 relative">
@@ -193,12 +344,14 @@ const Dashboard = () => {
               {/* Submit */}
               <button
                 onClick={handleSubmit}
-                disabled={!isConnected || !amount || isLoading}
-                className="w-full py-3 rounded-xl font-display font-bold text-sm bg-gradient-to-r from-primary to-gold-glow text-primary-foreground hover:shadow-xl hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                disabled={isButtonDisabled}
+                className={`w-full py-3 rounded-xl font-display font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                  txState === 'success' 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gradient-to-r from-primary to-gold-glow text-primary-foreground hover:shadow-xl hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
               >
-                {isLoading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                ) : !isConnected ? 'Connect Wallet' : !amount ? 'Enter Amount' : activeTab === 'mint' ? 'Mint xTIME' : 'Redeem TIME'}
+                {getButtonText()}
               </button>
             </div>
           </motion.div>
