@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowDownUp, Loader2, Info } from 'lucide-react';
 import { useAccount } from 'wagmi';
 import timeLogo from '@/assets/TIME.png';
@@ -51,7 +51,7 @@ const MintRedeemCard = () => {
           </div>
 
           {/* Card */}
-          <div className="neon-border rounded-2xl p-6 relative overflow-hidden">
+          <div className="neon-border rounded-2xl p-4 sm:p-6 relative overflow-hidden">
             <div className="absolute inset-0 shimmer pointer-events-none" />
             
             {/* Tabs */}
@@ -83,17 +83,17 @@ const MintRedeemCard = () => {
                     MAX
                   </button>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <input
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.0"
-                    className="flex-1 bg-transparent text-3xl font-display font-bold text-foreground outline-none placeholder:text-muted-foreground/50"
+                    className="flex-1 min-w-0 bg-transparent text-2xl sm:text-3xl font-display font-bold text-foreground outline-none placeholder:text-muted-foreground/50"
                   />
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border flex-shrink-0">
                     <img src={inputToken.logo} alt={inputToken.symbol} className="w-6 h-6" />
-                    <span className="font-display font-semibold">{inputToken.symbol}</span>
+                    <span className="font-display font-semibold text-sm">{inputToken.symbol}</span>
                   </div>
                 </div>
               </div>
@@ -113,21 +113,21 @@ const MintRedeemCard = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">You receive (after 5% fee)</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="flex-1 text-3xl font-display font-bold text-foreground">
+                <div className="flex items-center gap-3">
+                  <span className="flex-1 min-w-0 text-2xl sm:text-3xl font-display font-bold text-foreground truncate">
                     {estimatedOutput}
                   </span>
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border border-border flex-shrink-0">
                     <img src={outputToken.logo} alt={outputToken.symbol} className="w-6 h-6" />
-                    <span className="font-display font-semibold">{outputToken.symbol}</span>
+                    <span className="font-display font-semibold text-sm">{outputToken.symbol}</span>
                   </div>
                 </div>
               </div>
 
               {/* Info banner */}
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-cyan/5 border border-cyan/20">
+              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-xl bg-cyan/5 border border-cyan/20">
                 <Info className="w-5 h-5 text-cyan flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {activeTab === 'mint' 
                     ? 'Minting xTIME locks your TIME tokens. The xTIME price only goes up — any arbitrage gap benefits all holders.'
                     : 'Redeeming burns your xTIME and returns TIME tokens minus the 5% fee.'
@@ -139,7 +139,7 @@ const MintRedeemCard = () => {
               <button
                 onClick={handleSubmit}
                 disabled={!isConnected || !amount || isLoading}
-                className="w-full py-4 rounded-xl font-display font-bold text-lg bg-gradient-to-r from-primary to-gold-glow text-primary-foreground hover:shadow-xl hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-xl font-display font-bold text-base sm:text-lg bg-gradient-to-r from-primary to-gold-glow text-primary-foreground hover:shadow-xl hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>

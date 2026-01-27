@@ -1,5 +1,9 @@
-export const XTIME_ADDRESS = '0x0000000000000000000000000000000000000000' as const; // Replace with actual address
+export const XTIME_ADDRESS = '0xdcE001f55DA9c00c438d4129c6f02000b818e792' as const;
 export const TIME_ADDRESS = '0x0000000000000000000000000000000000000000' as const; // Replace with actual TIME token address
+
+export const LIQUIDITY_LOCKER_ADDRESS = '0x2f1176A677f67C109578D3Acb8Ac261555Dd31C6' as const;
+export const PULSEX_ROUTER_ADDRESS = '0x165C3410fC91EF562C50559f7d2289fEbed552d9' as const;
+export const XTIME_PLS_LP_ADDRESS = '0xaFBa1F0Fa76F36297799e955666f662F382C31a7' as const;
 
 export const XTIME_ABI = [
   {"inputs":[{"internalType":"address","name":"_baseAsset","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
@@ -39,6 +43,11 @@ export const XTIME_ABI = [
   {"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
   {"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
   {"inputs":[],"name":"underlyingBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+  {"stateMutability":"payable","type":"receive"}
+] as const;
+
+export const LIQUIDITY_LOCKER_ABI = [
+  {"inputs":[],"name":"boost","outputs":[],"stateMutability":"nonpayable","type":"function"},
   {"stateMutability":"payable","type":"receive"}
 ] as const;
 
