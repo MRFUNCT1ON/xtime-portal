@@ -14,7 +14,7 @@ const Footer = () => {
           {/* Links */}
           <div className="flex items-center gap-6">
             <a 
-              href="https://scan.pulsechain.com" 
+              href="https://ipfs.scan.pulsechain.com/address/0xdcE001f55DA9c00c438d4129c6f02000b818e792" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
@@ -22,34 +22,26 @@ const Footer = () => {
               PulseScan
             </a>
             <a 
-              href="#" 
+              href="https://github.com/MrFUNCT1ON" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Documentation
+              GitHub
             </a>
             <a 
-              href="#" 
+              href="https://x.com/don_function" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               Twitter
             </a>
-            <a 
-              href="#" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Telegram
-            </a>
           </div>
 
           {/* Copyright */}
           <p className="text-sm text-muted-foreground">
-            © 2025 xTIME by InternetMoney
+            © 2025 xTIME by Don Function
           </p>
         </div>
       </div>
