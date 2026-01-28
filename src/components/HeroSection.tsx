@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowUpRight, TrendingUp, Shield, Zap } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, Shield, Zap, Check } from 'lucide-react';
 import xTimeLogo from '@/assets/xTIME.png';
 const HeroSection = () => {
   return (
@@ -63,8 +63,8 @@ const HeroSection = () => {
                 <span className="text-sm text-muted-foreground">5% Fee Only</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border">
-                <Zap className="w-4 h-4 text-primary" />
-                <span className="text-sm text-muted-foreground">Arbitrage Resistant</span>
+                <Check className="w-4 h-4 text-primary" />
+                <span className="text-sm text-muted-foreground">Arbitrage Encouraged</span>
               </div>
             </div>
           </motion.div>
