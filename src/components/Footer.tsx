@@ -22,7 +22,7 @@ const Footer = () => {
               PulseScan
             </a>
             <a 
-              href="https://github.com/MrFUNCT1ON" 
+              href="https://github.com/MRFUNCT1ON/xtime-portal" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
