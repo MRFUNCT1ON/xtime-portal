@@ -275,7 +275,7 @@ const Dashboard = () => {
         {/* Heading */}
         <div className="text-center mb-6">
           <h2 className="font-display text-2xl sm:text-3xl font-bold mb-2 text-glow-gold">
-            Dashboard
+            Mint / Redeem
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
             Mint xTIME to lock your TIME and earn from every transaction

@@ -1,6 +1,7 @@
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import Dashboard from '@/components/Dashboard';
+import SwapPanel from '@/components/SwapPanel';
 import AboutSection from '@/components/AboutSection';
 import Footer from '@/components/Footer';
 import wallpaper from '@/assets/wallpaper.png';
@@ -26,6 +27,7 @@ const Index = () => {
         <main>
           <HeroSection />
           <Dashboard />
+          <SwapPanel />
           <AboutSection />
         </main>
         <Footer />
