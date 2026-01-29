@@ -10,6 +10,7 @@ const Header = () => {
   const navLinks = [
     { href: '#dashboard', label: 'Dashboard' },
     { href: '#swap', label: 'Swap' },
+    { href: '#arbitrage', label: 'Arbitrage' },
     { href: '#about', label: 'About' },
   ];
 
