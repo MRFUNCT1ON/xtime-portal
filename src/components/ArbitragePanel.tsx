@@ -11,8 +11,16 @@ import { ARBITRAGE_ADDRESS, ARBITRAGE_ABI } from '@/lib/contracts';
 import { pulsechain } from '@/lib/wagmi';
 import { toast } from '@/hooks/use-toast';
 
+const PROFIT_OPTIONS = [
+  { label: '1%', value: 100n },
+  { label: '3%', value: 300n },
+  { label: '5%', value: 500n },
+  { label: '10%', value: 1000n },
+];
+
 const ArbitragePanel = () => {
   const [plsAmount, setPlsAmount] = useState('');
+  const [minProfitBps, setMinProfitBps] = useState<bigint>(100n);
   const [isExecuting, setIsExecuting] = useState(false);
   
   const { address, isConnected } = useAccount();
@@ -73,7 +81,6 @@ const ArbitragePanel = () => {
       return;
     }
 
-    const minProfitBps = BigInt(0); // Accept any profit
     const value = parseEther(plsAmount);
 
     setIsExecuting(true);
@@ -225,7 +232,31 @@ const ArbitragePanel = () => {
                 )}
               </div>
 
-              {/* Action Buttons */}
+              {/* Min Profit Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Minimum Profit
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {PROFIT_OPTIONS.map((option) => (
+                    <Button
+                      key={option.label}
+                      variant={minProfitBps === option.value ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setMinProfitBps(option.value)}
+                      className={minProfitBps === option.value 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted/50 border-border hover:bg-muted'
+                      }
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Transaction reverts if profit is below this threshold
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   onClick={() => handleExecute('fing')}
