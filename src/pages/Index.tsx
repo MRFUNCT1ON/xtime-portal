@@ -2,6 +2,7 @@ import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import Dashboard from '@/components/Dashboard';
 import SwapPanel from '@/components/SwapPanel';
+import ArbitragePanel from '@/components/ArbitragePanel';
 import AboutSection from '@/components/AboutSection';
 import Footer from '@/components/Footer';
 import wallpaper from '@/assets/wallpaper.png';
@@ -28,6 +29,7 @@ const Index = () => {
           <HeroSection />
           <Dashboard />
           <SwapPanel />
+          <ArbitragePanel />
           <AboutSection />
         </main>
         <Footer />

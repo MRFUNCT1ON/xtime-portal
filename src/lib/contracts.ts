@@ -6,6 +6,7 @@ export const PULSEX_ROUTER_ADDRESS = '0x165C3410fC91EF562C50559f7d2289fEbed552d9
 export const WPLS_ADDRESS = '0xA1077a294dDE1B09bB078844df40758a5D0f9a27' as const;
 export const XTIME_PLS_LP_ADDRESS = '0xaFBa1F0Fa76F36297799e955666f662F382C31a7' as const;
 export const DAI_ADDRESS = '0xefD766cCb38EaF1dfd701853BFCe31359239F305' as const;
+export const ARBITRAGE_ADDRESS = '0x154C760e242e29af94cD6BDa2d2536eaEa7fB92f' as const;
 
 export const XTIME_ABI = [
   {"inputs":[{"internalType":"address","name":"_baseAsset","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
@@ -99,4 +100,11 @@ export const ERC20_ABI = [
   {"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"stateMutability":"view","type":"function"},
   {"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"stateMutability":"view","type":"function"},
   {"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+] as const;
+
+export const ARBITRAGE_ABI = [
+  {"inputs":[],"name":"getBestMove","outputs":[{"components":[{"internalType":"string","name":"title","type":"string"},{"internalType":"string","name":"description","type":"string"},{"internalType":"string","name":"functionId","type":"string"}],"internalType":"struct Response","name":"response","type":"tuple"}],"stateMutability":"view","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"minProfitBps","type":"uint256"}],"name":"fing","outputs":[{"internalType":"bool","name":"success","type":"bool"}],"stateMutability":"payable","type":"function"},
+  {"inputs":[{"internalType":"uint256","name":"minProfitBps","type":"uint256"}],"name":"fong","outputs":[{"internalType":"bool","name":"success","type":"bool"}],"stateMutability":"payable","type":"function"},
+  {"inputs":[],"name":"paused","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},
 ] as const;
