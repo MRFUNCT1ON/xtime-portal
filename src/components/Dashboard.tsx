@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useRef } from 'react';
+import { toPng } from 'html-to-image'
 import { motion } from 'framer-motion';
 import { ArrowDownUp, Loader2, Info, Rocket, Flame, TrendingUp, Coins, CheckCircle2 } from 'lucide-react';
 import { useAccount, useReadContract, useWriteContract, useBalance, useWaitForTransactionReceipt } from 'wagmi';
@@ -37,6 +39,22 @@ const Dashboard = () => {
   const { valueInTime, isLoading: holdingsLoading } = useHoldingsValue();
   const { usdPrice: xTimeUsd } = useXTimeUsdPrice();
   const { usdPrice: timeUsd } = useTimeUsdPrice();
+
+  const ref = useRef<HTMLDivElement>(null)
+
+  const handleShare = async () => {
+    if (!ref.current) return
+    const dataUrl = await toPng(ref.current, {
+      cacheBust: true,
+      pixelRatio: 2,
+      backgroundColor: '#0b0f1a'
+    })
+
+    const link = document.createElement('a')
+    link.download = 'balance.png'
+    link.href = dataUrl
+    link.click()
+  }
 
   // Liquidity locker reads
   const { data: plsBalance } = useBalance({ address: LIQUIDITY_LOCKER_ADDRESS });
@@ -412,7 +430,7 @@ const Dashboard = () => {
             >
               <div className="absolute -top-10 -right-10 w-20 h-20 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
               
-              <div className="relative z-10">
+              <div className="relative z-10" ref={ref}>
                 <div className="flex items-center gap-2 mb-3">
                   <Coins className="w-4 h-4 text-primary" />
                   <span className="font-display font-semibold text-sm">Your Balance</span>
@@ -463,6 +481,10 @@ const Dashboard = () => {
                     )}
                   </div>
                 </div>
+
+                <button onClick={handleShare}>
+                    Share
+                  </button>
               </div>
             </motion.div>
 
