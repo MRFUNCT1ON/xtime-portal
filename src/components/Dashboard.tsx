@@ -2,7 +2,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { toPng } from 'html-to-image'
 import { motion } from 'framer-motion';
-import { ArrowDownUp, Loader2, Info, Rocket, Flame, TrendingUp, Coins, CheckCircle2 } from 'lucide-react';
+import { ArrowDownUp, Loader2, Info, Rocket, Flame, TrendingUp, Coins, CheckCircle2, Share2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAccount, useReadContract, useWriteContract, useBalance, useWaitForTransactionReceipt } from 'wagmi';
 import { formatEther, parseUnits } from 'viem';
 import timeLogo from '@/assets/TIME.png';
@@ -482,9 +483,15 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <button onClick={handleShare}>
-                    Share
-                  </button>
+                <Button 
+                  onClick={handleShare}
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-4 border-primary/30 hover:border-primary hover:bg-primary/10 text-primary"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Balance
+                </Button>
               </div>
             </motion.div>
 
