@@ -150,8 +150,8 @@ const MintRedeemCard = () => {
                   <Info className="w-5 h-5 text-cyan flex-shrink-0 mt-0.5" />
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {activeTab === 'mint' 
-                      ? `Minting xTIME locks your TIME tokens. The xTIME price only goes up — any arbitrage gap benefits all holders. (${mintFee}% mint fee)`
-                      : `Redeeming burns your xTIME and returns TIME tokens minus the ${sellFee}% fee.`
+                      ? `Minting xTIME locks TIME tokens. The xTIME price only goes up — any arbitrage gap benefits all holders. (${mintFee}% mint fee)`
+                      : `Redeeming burns xTIME and returns TIME tokens minus the ${sellFee}% fee.`
                     }
                   </p>
                 </div>

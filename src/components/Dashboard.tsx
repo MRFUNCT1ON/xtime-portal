@@ -96,8 +96,8 @@ const Dashboard = () => {
         toast({
           title: activeTab === 'mint' ? "Mint Successful!" : "Redeem Successful!",
           description: activeTab === 'mint' 
-            ? "Your xTIME has been minted." 
-            : "Your TIME has been redeemed.",
+            ? "xTIME has been minted." 
+            : "TIME has been redeemed.",
         });
         setTimeout(() => {
           setTxState('idle');
@@ -297,7 +297,7 @@ const Dashboard = () => {
             Mint / Redeem
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
-            Mint xTIME to lock your TIME and earn from every transaction
+            Mint xTIME to lock TIME and earn from every transaction
           </p>
         </div>
 
@@ -439,7 +439,7 @@ const Dashboard = () => {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <Coins className="w-4 h-4 text-primary" />
-                    <span className="font-display font-semibold text-sm">Your Balance</span>
+                    <span className="font-display font-semibold text-sm">My Balance</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mb-2">

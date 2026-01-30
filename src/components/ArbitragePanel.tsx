@@ -52,7 +52,7 @@ const ArbitragePanel = () => {
       setIsExecuting(false);
       toast({
         title: 'Arbitrage Executed!',
-        description: 'Your transaction was successful.',
+        description: 'Transaction was successful.',
       });
       refetchBestMove();
       setPlsAmount('');
